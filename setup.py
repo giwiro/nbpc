@@ -8,4 +8,4 @@ setup(name="nbpc",
       author_email="giwirodavalos@gmail.com",
       license="MIT",
       packages=find_packages(),
-      install_requires=["pymongo", "requests", "tqdm"])
+      install_requires=["pymongo", "boto3"])
