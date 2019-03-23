@@ -119,6 +119,7 @@ dmypy.json
 
 # datasets
 ./datasets/*
+./datasets/tsv/*
 
 # OSX
 **/.DS_Store

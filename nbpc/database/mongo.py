@@ -4,6 +4,7 @@ from pymongo import MongoClient
 
 from nbpc.database import AbstractDatabase, DB_NAME, TABLE_NAME
 
+
 class MongoDatabase(AbstractDatabase):
     default_uri = "mongodb://localhost:27017/"
 
