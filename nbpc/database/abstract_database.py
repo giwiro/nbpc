@@ -4,16 +4,18 @@ from typing import Dict
 __names__ = ["AbstractDatabase", "TABLE_NAME", "DB_NAME"]
 
 DB_NAME = "nbpc"
-TABLE_NAME = "product"
+TABLE_NAME = "Product"
 
 
 class AbstractDatabase(ABC):
-    default_uri: str
 
-    def __init__(self, uri):
-        self.uri = uri
+    def __init__(self, host, port, user="", password="", db=""):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+        self.db = db
         self.client = None
-        self.session = None
         self.transaction = None
         super().__init__()
 
@@ -27,11 +29,11 @@ class AbstractDatabase(ABC):
         ...
 
     @abstractmethod
-    def create_db(self):
+    def connect_db(self):
         pass
 
     @abstractmethod
-    def connect_db(self):
+    def create_db(self):
         pass
 
     @abstractmethod
@@ -44,4 +46,8 @@ class AbstractDatabase(ABC):
 
     @abstractmethod
     def insert_many(self, items: [Dict[str, str]]) -> [Dict[str, str]]:
+        pass
+
+    @abstractmethod
+    def insert(self, item: Dict[str, str]) -> Dict[str, str]:
         pass

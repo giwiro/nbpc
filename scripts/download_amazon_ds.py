@@ -50,7 +50,7 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=str, required=True,
                         help="Output folder location")
-    parser.add_argument("--threads", type=int, default=2,
+    parser.add_argument("--threads", type=int, default=7,
                         help="Numbers of threads in the queue")
 
     return parser.parse_args()

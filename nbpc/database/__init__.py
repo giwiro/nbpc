@@ -1,6 +1,7 @@
 from typing import Type
 
 from nbpc.database.abstract_database import AbstractDatabase, DB_NAME, TABLE_NAME
+from nbpc.database.maria import MariaDatabase
 from nbpc.database.mongo import MongoDatabase
 
 
@@ -9,3 +10,5 @@ class DatabaseFactory:
     def get_class(t: str) -> Type[AbstractDatabase]:
         if t == "mongo":
             return MongoDatabase
+        if t == "maria":
+            return MariaDatabase

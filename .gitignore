@@ -118,8 +118,7 @@ dmypy.json
 .idea/
 
 # datasets
-./datasets/*
-./datasets/tsv/*
+datasets/amazon
 
 # OSX
 **/.DS_Store
