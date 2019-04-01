@@ -1,4 +1,5 @@
 import argparse
+import csv
 import os
 from functools import partial
 from multiprocessing import Pool as ProcessPool
@@ -9,7 +10,7 @@ from tqdm import tqdm
 
 from nbpc.database import DatabaseFactory, DB_NAME
 
-OUT_FILE_NAME = "amazon_reviews_us_unified.tsv"
+WRONG_ENTRIES_FILE_NAME = "wrong_entries.tsv"
 
 COLUMN_NAMES = [
     "marketplace",
@@ -54,19 +55,34 @@ Database = DatabaseFactory.get_class("maria")
 def worker_job(filename: str, input_path: str, db_host: str, db_port: int, db_user: str, db_passwd: str):
     with Database(host=db_host, port=db_port, user=db_user, password=db_passwd, db=DB_NAME) as session:
         input_file_path = os.path.join(input_path, filename)
-        df = pd.read_csv(input_file_path, names=COLUMN_NAMES, dtype=str, sep="\t", skiprows=1)
+        wrong_entries_file_path = os.path.join(input_path, WRONG_ENTRIES_FILE_NAME)
+        df = pd.read_csv(input_file_path, names=COLUMN_NAMES, dtype=str, sep="\t", quoting=csv.QUOTE_NONE, skiprows=1)
         session.start_transaction()
         for index, row in df.iterrows():
-            print(row.get("product_title", ""))
-            session.insert(
-                dict(
-                    product_title=row.get("product_title", ""),
-                    product_category=row.get("product_category", "")
+            title = row.get("product_title", "")
+            # We gotta check if number (NaN) otherwise it will crash
+            if type(title).__name__ == "int" or type(title).__name__ == "float":
+                with open(wrong_entries_file_path, "a") as we:
+                    we.write("\t".join(str(x) for x in row.values) + "\n")
+                continue
+            try:
+                session.insert(
+                    dict(
+                        product_title=title,
+                        product_category=row.get("product_category", "")
+                    )
                 )
-            )
+            except Exception as e:
+                print(f"ERROR !!!! in file => {filename}")
+                pprint(row.values)
+                raise e
 
 
 def process_dataset(input_: str, db_host: str, db_port: int, db_user: str, db_passwd: str, processes: int):
+    wrong_entries_file_path = os.path.join(input_, WRONG_ENTRIES_FILE_NAME)
+    with open(wrong_entries_file_path, "w") as we:
+        we.write("\t".join(COLUMN_NAMES) + "\n")
+
     with Database(host=db_host, port=db_port, user=db_user, password=db_passwd) as session:
         session.drop_db()
         session.create_db()
@@ -76,8 +92,8 @@ def process_dataset(input_: str, db_host: str, db_port: int, db_user: str, db_pa
                              db_passwd=db_passwd)
 
     for r, d, f in os.walk(input_):
-        with tqdm(total=len(f[:2])) as progress:
-            for _ in tqdm(ppool.imap_unordered(worker_job_new, f[:2])):
+        with tqdm(total=len(f)) as progress:
+            for _ in tqdm(ppool.imap_unordered(worker_job_new, f)):
                 progress.update()
 
     ppool.close()
