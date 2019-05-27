@@ -52,6 +52,17 @@ COLUMN_NAMES = [
 Database = DatabaseFactory.get_class("maria")
 
 
+def map_row(row: pd.Series) -> dict[str, str]:
+    title = row.get("product_title", "")
+    # Here we need to get rid of all unsafe chars like emojis
+    title = title.encode('ascii', 'ignore').decode('ascii')
+    category = row.get("product_category", "")
+    return dict(
+        product_title=title,
+        product_category=category,
+    )
+
+
 def worker_job(filename: str, input_path: str, db_host: str, db_port: int, db_user: str, db_passwd: str):
     with Database(host=db_host, port=db_port, user=db_user, password=db_passwd, db=DB_NAME) as session:
         input_file_path = os.path.join(input_path, filename)
@@ -66,12 +77,8 @@ def worker_job(filename: str, input_path: str, db_host: str, db_port: int, db_us
                     we.write("\t".join(str(x) for x in row.values) + "\n")
                 continue
             try:
-                session.insert(
-                    dict(
-                        product_title=title,
-                        product_category=row.get("product_category", "")
-                    )
-                )
+                mr = map_row(row.values)
+                session.insert(mr)
             except Exception as e:
                 print(f"ERROR !!!! in file => {filename}")
                 pprint(row.values)
