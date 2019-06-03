@@ -43,3 +43,9 @@ class MongoDatabase(AbstractDatabase):
 
     def insert(self, item: Dict[str, str]) -> Dict[str, str]:
         pass
+
+    def fetch_all_cursor(self):
+        pass
+
+    def persist_tsv(self, dataset_path: str):
+        pass

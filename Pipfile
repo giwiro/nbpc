@@ -11,6 +11,9 @@ pymongo = "*"
 pandas = "*"
 tqdm = "*"
 mysql-connector-python = "*"
+tensorflow = "*"
+scikit-learn = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.7"

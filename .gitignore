@@ -119,6 +119,7 @@ dmypy.json
 
 # datasets
 datasets/amazon
+datasets/dataset.tsv
 
 # OSX
 **/.DS_Store

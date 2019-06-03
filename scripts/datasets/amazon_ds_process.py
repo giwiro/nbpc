@@ -1,9 +1,11 @@
 import argparse
 import csv
 import os
+import string
 from functools import partial
 from multiprocessing import Pool as ProcessPool
 from pprint import pprint
+from typing import Dict
 
 import pandas as pd
 from tqdm import tqdm
@@ -52,15 +54,49 @@ COLUMN_NAMES = [
 Database = DatabaseFactory.get_class("maria")
 
 
-def map_row(row: pd.Series) -> dict[str, str]:
+def map_row(row: pd.Series) -> Dict[str, str]:
     title = row.get("product_title", "")
     # Here we need to get rid of all unsafe chars like emojis
     title = title.encode('ascii', 'ignore').decode('ascii')
+    # Remove punctuation
+    title = ''.join(c for c in title if c not in string.punctuation)
+    # Remove numbers
+    # title = ''.join(c for c in title if c not in '0123456789')
+    # Remove unnecessary white spaces
+    title = ' '.join(title.split())
+    # To lower case
+    title = title.lower()
+
     category = row.get("product_category", "")
-    return dict(
+    # To lower case
+    category = category.lower()
+    # Snake case
+    category = "_".join(category.split(" "))
+
+    custom_category = ""
+
+    if category == "apparel":
+        custom_category = "clothing"
+    elif category == "beauty":
+        custom_category = "makeup_beauty"
+    elif category == "camera":
+        custom_category = "cameras_video"
+    elif category == "digital_video_games":
+        custom_category = "game_consoles"
+    elif category == "shoes":
+        custom_category = "shoes"
+    elif category == "video_games":
+        custom_category = "game_consoles"
+    elif category == "watches":
+        custom_category = "clothing_accessories"
+
+    resp = dict(
         product_title=title,
         product_category=category,
+        custom_category=custom_category,
     )
+    # print(resp)
+    return resp
 
 
 def worker_job(filename: str, input_path: str, db_host: str, db_port: int, db_user: str, db_passwd: str):
@@ -77,7 +113,7 @@ def worker_job(filename: str, input_path: str, db_host: str, db_port: int, db_us
                     we.write("\t".join(str(x) for x in row.values) + "\n")
                 continue
             try:
-                mr = map_row(row.values)
+                mr = map_row(row)
                 session.insert(mr)
             except Exception as e:
                 print(f"ERROR !!!! in file => {filename}")
@@ -121,7 +157,7 @@ def parse_arguments() -> argparse.Namespace:
                         help="Database password")
     # Keep in mind it will load all the ds into your memory
     # I strongly suggest you pick 2 if you have <= 12 GB
-    # 3 GB system, 5 GB process python script, 3 GB browser
+    # 3 GB system, 5 GB python script process, 3 GB browser
     parser.add_argument("--processes", type=int, default=1,
                         help="Numbers of processes in the pool")
     return parser.parse_args()

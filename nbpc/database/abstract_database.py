@@ -4,7 +4,7 @@ from typing import Dict
 __names__ = ["AbstractDatabase", "TABLE_NAME", "DB_NAME"]
 
 DB_NAME = "nbpc"
-TABLE_NAME = "Product"
+TABLE_NAME = "product"
 
 
 class AbstractDatabase(ABC):
@@ -51,3 +51,12 @@ class AbstractDatabase(ABC):
     @abstractmethod
     def insert(self, item: Dict[str, str]) -> Dict[str, str]:
         pass
+
+    @abstractmethod
+    def fetch_all_cursor(self):
+        pass
+
+    @abstractmethod
+    def persist_tsv(self, dataset_path: str):
+        pass
+

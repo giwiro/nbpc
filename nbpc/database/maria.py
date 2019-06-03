@@ -33,7 +33,7 @@ class MariaDatabase(AbstractDatabase):
             "id INT NOT NULL AUTO_INCREMENT," \
             "name TEXT NOT NULL," \
             "category VARCHAR(120) NOT NULL," \
-            "custom_category VARCHAR(120)," \
+            "custom_category VARCHAR(120) NOT NULL," \
             "PRIMARY KEY (id)" \
             ")"
         print(sql)
@@ -59,5 +59,21 @@ class MariaDatabase(AbstractDatabase):
         sql = f"INSERT INTO {TABLE_NAME} " \
             "(name, category, custom_category) " \
             "VALUES(%s, %s, %s)"
-        sql_values = (item.get("product_title", ""), item.get("product_category", ""), "")
+        sql_values = (item.get("product_title", ""), item.get("product_category", ""), item.get("custom_category", ""))
         self.transaction.execute(sql, sql_values)
+
+    def fetch_all_cursor(self):
+        c = self.client.cursor()
+        c.execute(f"SELECT id, name, custom_category FROM {TABLE_NAME}")
+        return c
+
+    def persist_tsv(self, dataset_path: str):
+        persist_cursor = self.client.cursor()
+        sql = "SELECT DISTINCT custom_category, name " \
+              "FROM product " \
+              "ORDER BY RAND() " \
+            f"INTO OUTFILE '{dataset_path}' " \
+              "FIELDS TERMINATED BY '\t' " \
+              "LINES TERMINATED BY '\n';"
+
+        persist_cursor.execute(sql)
