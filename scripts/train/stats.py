@@ -3,6 +3,8 @@ from typing import List, Tuple
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
+from nbpc.train.tfidf import TfIdf
+
 TOP_N_WORDS = 20
 
 
@@ -28,7 +30,7 @@ def show_top_n_words(top_words_freq: List[Tuple[str, int]]):
 def stats(dataset_path: str):
     data = np.genfromtxt(dataset_path, delimiter="\t", dtype=str)
     texts = data[:, 1]
-    cv = CountVectorizer()
+    cv = CountVectorizer(stop_words="english", tokenizer=TfIdf.tokenize)
     cv_fit = cv.fit(texts)
 
     bag_of_words = cv_fit.transform(texts)
