@@ -44,7 +44,7 @@ def train(dataset_path: str, bin_dumps: str):
 
     # Initialize placeholders
     x_text = tf.placeholder(shape=[BATCH_SIZE, num_features], dtype=tf.float32)
-    y_label = tf.placeholder(shape=[BATCH_SIZE, 1], dtype=tf.float32)
+    y_label = tf.placeholder(shape=[BATCH_SIZE, num_labels], dtype=tf.float32)
 
     # Variables.
     weights = tf.Variable(tf.truncated_normal([num_features, num_labels]))
