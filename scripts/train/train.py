@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
+from nbpc.train.model import Model
 from nbpc.train.tfidf import TfIdf
 
 TRAIN_TEST_RATIO = 0.8
@@ -12,6 +13,7 @@ def train(dataset_path: str, bin_dumps: str):
     data = np.genfromtxt(dataset_path, delimiter="\t", dtype=str)
     texts = data[:, 1]
     tfidf = TfIdf(bin_dumps)
+    model = Model(0.05)
 
     # Create sparse matrix if does not exist
     if tfidf.sparse_matrix is None:
@@ -51,11 +53,16 @@ def train(dataset_path: str, bin_dumps: str):
     biases = tf.Variable(tf.zeros([num_labels]))
 
     # Decision Boundary
-    logits = tf.matmul(x_text, weights) + biases
+    logits = Model.decision_boundary_fn(x_text, weights, biases)
 
-    # Loss: instead using gradient descent, we use cross entropy
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-        labels=y_label, logits=logits))
+    # Loss: instead using least mean square, we use cross entropy
+    loss = Model.loss_fn(y_label, logits)
+
+    # Optimizer
+    optimizer = model.optimizer_fn(loss)
+
+    # Predictions
+    train_prediction = Model.predict(logits)
 
 
 def parse_arguments() -> argparse.Namespace:
