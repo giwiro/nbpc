@@ -22,25 +22,29 @@ class TfIdf:
         return nltk.word_tokenize(text)
 
     @staticmethod
+    def gen_label_vector(idx: int):
+        return [0 if x != idx else 1 for x in range(TfIdf.get_num_categories())]
+
+    @staticmethod
     def get_num_categories():
         return 7
 
     @staticmethod
     def get_category_id(category: str):
         if category == "clothing":
-            return 1
+            return 0
         elif category == "makeup_beauty":
-            return 2
+            return 1
         elif category == "cameras_video":
+            return 2
+        elif category == "game_consoles":
             return 3
-        elif category == "game_consoles":
-            return 4
         elif category == "shoes":
-            return 5
+            return 4
         elif category == "game_consoles":
-            return 6
+            return 5
         elif category == "clothing_accessories":
-            return 7
+            return 6
 
     def load(self):
         with open(self.dump_path, "rb") as f:
@@ -57,5 +61,4 @@ class TfIdf:
         print("Creating matrix...")
         self.vectorizer = TfidfVectorizer(stop_words="english")
         self.sparse_matrix = self.vectorizer.fit_transform(texts)
-        print(self.sparse_matrix)
         self.save()
